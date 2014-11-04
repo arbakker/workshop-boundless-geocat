@@ -2,9 +2,12 @@
 title: GeoBuzz Workshop by Boundless & GeoCat
 email: anton.bakker@geocat.net
 email2: bartvde@boundless.com
+logo1: http://boundlessgeo.com/wp-content/uploads/2013/09/Boundless_color.png
+logo2: https://www.geocat.net/wp-content/uploads/2014/11/GeoCat_500x1061.png
+
 license: "<a rel='license' href='http://creativecommons.org/licenses/by-nc-sa/3.0/'><img alt='Creative Commons License' style='border-width:0' src='http://i.creativecommons.org/l/by-nc-sa/3.0/88x31.png'></a>"
 attribution: "Workshop material based on <a href='http://workshops.boundlessgeo.com/tutorial-censusmap/'>Building a Census Map</a>"
-description: "Write an awesome description for your new site here. You can edit this line in _config.yml.It will appear in your document head meta (for Google search results) and in your feed.xml site description."
+description: "Short description of the workshop."
 baseurl: "/workshop-boundless-geocat"
 url: "http://arbakker.github.io/workshop-boundless-geocat"
 
