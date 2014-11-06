@@ -229,7 +229,6 @@ a:visited { color: #205caa; }
 .post code {
   border: 1px solid #d5d5e9;
   background-color: #eef;
-  padding: 8px 12px;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;
@@ -245,7 +244,7 @@ a:visited { color: #205caa; }
 .post pre code {
   border: 0;
   padding-right: 0;
-  padding-left: 0;
+  padding-left: 2em;
 }
 
 /* terminal */
@@ -407,4 +406,8 @@ a:visited { color: #205caa; }
     width: auto;
     margin: 0 0 15px; }
 
+}
+
+.post-content > pre{
+  margin: 0px 0px;
 }
