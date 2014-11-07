@@ -415,13 +415,15 @@ The column names that the census uses are pretty opaque aren’t they? What we n
 
 ### Preparing the Metadata
 
-The first thing we need for our app is a data file that maps the short, meaningless column names in our census table to human readable information. Fortunately, the [dictionary.txt](data/dictionary.txt) file has all the information we need. The dictionary.txt file was created by parsing the text of the [Buurten en Wijken documentation pdf](http://download.cbs.nl/regionale-kaarten/toelichting-buurtkaart-2013-v1.pdf) with a [python script](data/extract-dictionary.py.txt).  
- Here’s a couple example lines:
+The first thing we need for our app is a data file that maps the short, meaningless column names in our census table to human readable information. Fortunately, the [dictionary.txt](data/dictionary.txt) file has all the information we need. The dictionary.txt file was created by combining the text of the [Buurten en Wijken documentation pdf](http://download.cbs.nl/regionale-kaarten/toelichting-buurtkaart-2013-v1.pdf) in combination with a list of all the columns of the Buurten en Wijken dataset with a [python script](data/extract-dictionary.py.txt).  
 
+The documentation of the Buurten en Wijken en dataset lists a lot more attributes than the [file](http://www.nationaalgeoregister.nl/geonetwork/srv/dut/search#|71c56abd-87e8-4836-b732-98d73c73c112) has that we downloaded from the NGR.
 
-    P_HH_M_K: Huishoudens met kinderen [%]
-    GEM_HH_GR: Gemiddelde huishoudensgrootte [absoluut]
-    P_WEST_AL: Westers totaal [%]
+Here’s a couple example lines:
+
+- P_HH_M_K: Huishoudens met kinderen [%]
+- GEM_HH_GR: Gemiddelde huishoudensgrootte [absoluut]
+- P_WEST_AL: Westers totaal [%]
 
 Each line has the column name and a human readable description. Fortunately the information is nicely seperated by a colon in the text file, so the fields can be extracted by using a `split()` function.
 
