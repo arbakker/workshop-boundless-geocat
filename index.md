@@ -2,12 +2,15 @@
 layout: page
 permalink: /
 ---
+> **Note**
+>
+> Check out the [full demonstration application](code/index.html) and play!
 
 
 ## Introduction
 
 
-![app](img/census_hispanic.png)
+![app](img/census-app.png)
 
 For this adventure in map building, we use the following tools, which if you are following along you will want to install now:
 
@@ -116,25 +119,297 @@ For example:
 
 Let’s try it on our own census data.
 
-<pre><code class="sql">SELECT Avg(pst045212), Stddev(pst045212) FROM census;
+<pre><code class="sql">SELECT Avg(AANT_INW), Stddev(AANT_INW) FROM wijken;
 
---
---        avg        |     stddev
--- ------------------+-----------------
---  99877.2001272669 | 319578.62862369
+--           avg          |      stddev
+-- -----------------------+-------------------
+--  6342.9073724007561437 | 9864.171304604906
 
-SELECT Avg((pst045212 - 99877.2001272669) / 319578.62862369),
-       Stddev((pst045212 - 99877.2001272669) / 319578.62862369)
-FROM census;
+SELECT Avg((AANT_INW - 6342.9073724007561437) / 9864.171304604906),
+       Stddev((AANT_INW - 6342.9073724007561437) / 9864.171304604906)
+FROM wijken;
 
 --     avg    | stddev
 -- -----------+--------
---      0     |      1</code></pre>
+--      ~0    |     ~1</code></pre>
 
 So we can easily convert any of our data into a scale that centers on 0 and where one standard deviation equals one unit just by normalizing the data with the average and standard deviation!
 
 Our new parametric SQL view will look like this:
 
+<pre><code class="sql">-- Precompute the Avg and StdDev,
+WITH stats AS (
+  SELECT Avg(%column%) AS avg,
+         Stddev(%column%) AS stddev
+  FROM census
+)
+SELECT
+  wijken.gm_naam,
+  wijken.wk_naam,
+  wijken.geom,
+  %column% as data
+  (%column% - avg)/stddev AS normalized_data
+FROM stats,wijken</code></pre>
+
+The query first calculates the overall statistics for the column, then applies those stats to the data in the table wijken, serving up a normalized view of the data.
+
+With our data normalized, we are ready to create one style to rule them all!
+
+- Our style will have two colors, one to indicate counties “above average” and the other for “below average”
+- Within those two colors it will have 3 shades, for a total of 6 bins in all
+- In order to divide up the population more or less evenly, the bins will be
+    - (#b2182b) -1.0 and down (very below average)
+    - (#ef8a62) -1.0 to -0.5 (below average)
+    - (#fddbc7) -0.5 to 0.0 (a little below average)
+    - (#d1e5f0) 0.0 to 0.5 (a little above average)
+    - (#67a9cf) 0.5 to 1.0 (above average)
+    - (#2166ac) 1.0 and up (very above average)
+
+The colors above weren’t chosen randomly! I always use the [ColorBrewer](http://colorbrewer2.org/) site when building themes, because ColorBrewer provides palettes that have been tested for maximum readability and to some extent aesthetic quality. Here’s the palette I chose:
+
+![colorbrewer](img/colorbrewer.png)
+
+- Configure a new style in GeoServer by going to the Styles section, and selecting Add a new style.
+- Set the style name to stddev
+- Set the style workspace to opengeo
+- Paste in the style definition (below) for [stddev.xml](data/stddev.xml) and hit the Save button at the bottom
+
+<pre><code class="xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;ISO-8859-1&quot;?&gt;
+&lt;StyledLayerDescriptor version=&quot;1.0.0&quot;
+  xmlns=&quot;http://www.opengis.net/sld&quot;
+  xmlns:ogc=&quot;http://www.opengis.net/ogc&quot;
+  xmlns:xlink=&quot;http://www.w3.org/1999/xlink&quot;
+  xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+  xmlns:gml=&quot;http://www.opengis.net/gml&quot;
+  xsi:schemaLocation=&quot;http://www.opengis.net/sld
+  http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd&quot;&gt;
+
+  &lt;NamedLayer&gt;
+    &lt;Name&gt;opengeo:stddev&lt;/Name&gt;
+    &lt;UserStyle&gt;
+
+      &lt;Name&gt;Standard Deviation Ranges&lt;/Name&gt;
+
+      &lt;FeatureTypeStyle&gt;
+
+        &lt;Rule&gt;
+          &lt;Name&gt;StdDev &amp;lt; -1.0&lt;/Name&gt;
+          &lt;ogc:Filter&gt;
+            &lt;ogc:PropertyIsLessThan&gt;
+              &lt;ogc:PropertyName&gt;normalized_data&lt;/ogc:PropertyName&gt;
+              &lt;ogc:Literal&gt;-1.0&lt;/ogc:Literal&gt;
+            &lt;/ogc:PropertyIsLessThan&gt;
+          &lt;/ogc:Filter&gt;
+          &lt;PolygonSymbolizer&gt;
+             &lt;Fill&gt;
+                &lt;!-- CssParameters allowed are fill and fill-opacity --&gt;
+                &lt;CssParameter name=&quot;fill&quot;&gt;#b2182b&lt;/CssParameter&gt;
+             &lt;/Fill&gt;
+             &lt;Stroke&gt;
+               &lt;CssParameter name=&quot;stroke&quot;&gt;#1F1F1F&lt;/CssParameter&gt;
+               &lt;CssParameter name=&quot;stroke-width&quot;&gt;.25&lt;/CssParameter&gt;
+             &lt;/Stroke&gt;
+          &lt;/PolygonSymbolizer&gt;
+        &lt;/Rule&gt;
+
+        &lt;Rule&gt;
+          &lt;Name&gt;-1.0 &amp;lt; StdDev &amp;lt; -0.5&lt;/Name&gt;
+          &lt;ogc:Filter&gt;
+            &lt;ogc:PropertyIsBetween&gt;
+              &lt;ogc:PropertyName&gt;normalized_data&lt;/ogc:PropertyName&gt;
+              &lt;ogc:LowerBoundary&gt;
+                &lt;ogc:Literal&gt;-1.0&lt;/ogc:Literal&gt;
+              &lt;/ogc:LowerBoundary&gt;
+              &lt;ogc:UpperBoundary&gt;
+                &lt;ogc:Literal&gt;-0.5&lt;/ogc:Literal&gt;
+              &lt;/ogc:UpperBoundary&gt;
+            &lt;/ogc:PropertyIsBetween&gt;
+          &lt;/ogc:Filter&gt;
+          &lt;PolygonSymbolizer&gt;
+            &lt;Fill&gt;
+              &lt;!-- CssParameters allowed are fill and fill-opacity --&gt;
+              &lt;CssParameter name=&quot;fill&quot;&gt;#ef8a62&lt;/CssParameter&gt;
+            &lt;/Fill&gt;
+            &lt;Stroke&gt;
+               &lt;CssParameter name=&quot;stroke&quot;&gt;#1F1F1F&lt;/CssParameter&gt;
+               &lt;CssParameter name=&quot;stroke-width&quot;&gt;.25&lt;/CssParameter&gt;
+             &lt;/Stroke&gt;
+          &lt;/PolygonSymbolizer&gt;
+        &lt;/Rule&gt;
+
+        &lt;Rule&gt;
+          &lt;Name&gt;-0.5 &amp;lt; StdDev &amp;lt; 0.0&lt;/Name&gt;
+          &lt;ogc:Filter&gt;
+            &lt;ogc:PropertyIsBetween&gt;
+              &lt;ogc:PropertyName&gt;normalized_data&lt;/ogc:PropertyName&gt;
+              &lt;ogc:LowerBoundary&gt;
+                &lt;ogc:Literal&gt;-0.5&lt;/ogc:Literal&gt;
+              &lt;/ogc:LowerBoundary&gt;
+              &lt;ogc:UpperBoundary&gt;
+                &lt;ogc:Literal&gt;0.0&lt;/ogc:Literal&gt;
+              &lt;/ogc:UpperBoundary&gt;
+            &lt;/ogc:PropertyIsBetween&gt;
+          &lt;/ogc:Filter&gt;
+          &lt;PolygonSymbolizer&gt;
+            &lt;Fill&gt;
+              &lt;!-- CssParameters allowed are fill and fill-opacity --&gt;
+              &lt;CssParameter name=&quot;fill&quot;&gt;#fddbc7&lt;/CssParameter&gt;
+            &lt;/Fill&gt;
+            &lt;Stroke&gt;
+               &lt;CssParameter name=&quot;stroke&quot;&gt;#1F1F1F&lt;/CssParameter&gt;
+               &lt;CssParameter name=&quot;stroke-width&quot;&gt;.25&lt;/CssParameter&gt;
+             &lt;/Stroke&gt;
+          &lt;/PolygonSymbolizer&gt;
+        &lt;/Rule&gt;
+
+        &lt;Rule&gt;
+          &lt;Name&gt;0.0 &amp;lt; StdDev &amp;lt; 0.5&lt;/Name&gt;
+          &lt;ogc:Filter&gt;
+            &lt;ogc:PropertyIsBetween&gt;
+              &lt;ogc:PropertyName&gt;normalized_data&lt;/ogc:PropertyName&gt;
+              &lt;ogc:LowerBoundary&gt;
+                &lt;ogc:Literal&gt;0.0&lt;/ogc:Literal&gt;
+              &lt;/ogc:LowerBoundary&gt;
+              &lt;ogc:UpperBoundary&gt;
+                &lt;ogc:Literal&gt;0.5&lt;/ogc:Literal&gt;
+              &lt;/ogc:UpperBoundary&gt;
+            &lt;/ogc:PropertyIsBetween&gt;
+          &lt;/ogc:Filter&gt;
+          &lt;PolygonSymbolizer&gt;
+            &lt;Fill&gt;
+              &lt;!-- CssParameters allowed are fill and fill-opacity --&gt;
+              &lt;CssParameter name=&quot;fill&quot;&gt;#d1e5f0&lt;/CssParameter&gt;
+            &lt;/Fill&gt;
+            &lt;Stroke&gt;
+               &lt;CssParameter name=&quot;stroke&quot;&gt;#1F1F1F&lt;/CssParameter&gt;
+               &lt;CssParameter name=&quot;stroke-width&quot;&gt;.25&lt;/CssParameter&gt;
+             &lt;/Stroke&gt;
+          &lt;/PolygonSymbolizer&gt;
+        &lt;/Rule&gt;
+
+        &lt;Rule&gt;
+          &lt;Name&gt;0.5 &amp;lt; StdDev &amp;lt; 1.0&lt;/Name&gt;
+          &lt;ogc:Filter&gt;
+            &lt;ogc:PropertyIsBetween&gt;
+              &lt;ogc:PropertyName&gt;normalized_data&lt;/ogc:PropertyName&gt;
+              &lt;ogc:LowerBoundary&gt;
+                &lt;ogc:Literal&gt;0.5&lt;/ogc:Literal&gt;
+              &lt;/ogc:LowerBoundary&gt;
+              &lt;ogc:UpperBoundary&gt;
+                &lt;ogc:Literal&gt;1.0&lt;/ogc:Literal&gt;
+              &lt;/ogc:UpperBoundary&gt;
+            &lt;/ogc:PropertyIsBetween&gt;
+          &lt;/ogc:Filter&gt;
+          &lt;PolygonSymbolizer&gt;
+            &lt;Fill&gt;
+              &lt;!-- CssParameters allowed are fill and fill-opacity --&gt;
+              &lt;CssParameter name=&quot;fill&quot;&gt;#67a9cf&lt;/CssParameter&gt;
+            &lt;/Fill&gt;
+            &lt;Stroke&gt;
+               &lt;CssParameter name=&quot;stroke&quot;&gt;#1F1F1F&lt;/CssParameter&gt;
+               &lt;CssParameter name=&quot;stroke-width&quot;&gt;.25&lt;/CssParameter&gt;
+             &lt;/Stroke&gt;
+          &lt;/PolygonSymbolizer&gt;
+        &lt;/Rule&gt;
+
+        &lt;Rule&gt;
+          &lt;Name&gt;1.0 &amp;lt; StdDev&lt;/Name&gt;
+          &lt;ogc:Filter&gt;
+            &lt;ogc:PropertyIsGreaterThan&gt;
+              &lt;ogc:PropertyName&gt;normalized_data&lt;/ogc:PropertyName&gt;
+              &lt;ogc:Literal&gt;1.0&lt;/ogc:Literal&gt;
+            &lt;/ogc:PropertyIsGreaterThan&gt;
+          &lt;/ogc:Filter&gt;
+          &lt;PolygonSymbolizer&gt;
+             &lt;Fill&gt;
+                &lt;!-- CssParameters allowed are fill and fill-opacity --&gt;
+                &lt;CssParameter name=&quot;fill&quot;&gt;#2166ac&lt;/CssParameter&gt;
+             &lt;/Fill&gt;
+            &lt;Stroke&gt;
+               &lt;CssParameter name=&quot;stroke&quot;&gt;#1F1F1F&lt;/CssParameter&gt;
+               &lt;CssParameter name=&quot;stroke-width&quot;&gt;.25&lt;/CssParameter&gt;
+             &lt;/Stroke&gt;
+          &lt;/PolygonSymbolizer&gt;
+        &lt;/Rule&gt;
+
+     &lt;/FeatureTypeStyle&gt;
+    &lt;/UserStyle&gt;
+  &lt;/NamedLayer&gt;
+&lt;/StyledLayerDescriptor&gt;</code></pre>
+
+Now we have a style, we just need to create a layer that uses it!
+
+### Creating a SQL view
+
+First, we need a PostGIS store that connects to our database
+
+- Go to the Stores section of GeoServer and Add a new store
+- Select a PostGIS store
+- Set the workspace to opengeo
+- Set the datasource name to census
+- Set the database to census
+- Set the user to postgres
+- Set the password to postgres
+- Save the store
+
+You’ll be taken immediately to the New Layer panel (how handy) where you should:
+
+- Click on Configure new SQL view...
+- Set the view name to normalized
+- Set the SQL statement to
+
+<pre><code  class="sql">-- Precompute the Avg and StdDev,
+-- then normalize table
+WITH stats AS (
+  SELECT Avg(%column%) AS avg,
+         Stddev(%column%) AS stddev
+  FROM wijken
+)
+SELECT
+  wijken.geom,
+  wijken.wk_code as wijk_code,
+  wijken.wk_naam || 'Wijk' As wijk,
+  wijken.gm_naam || 'Gemeente' As gemeente,
+  '%column%'::text As variable,
+  %column%::real As data,
+  (%column% - avg)/stddev AS normalized_data
+FROM stats, wijken</code></pre>
+
+- Click the Guess parameters from SQL link in the “SQL view parameters” section
+- Set the default value of the “column” parameter to aant_inw
+- Check the “Guess geometry type and srid” box
+- Click the Refresh link in the “Attributes” section
+- Select the wijk_code column as the “Identifier”
+- Click Save
+
+You’ll be taken immediately to the Edit Layer panel (how handy) where you should:
+
+- In the Data tab
+    - Under “Bounding Boxes” click Compute from data
+    - Under “Bounding Boxes” click Compute from native bounds
+- In the Publishing tab
+    - Set the Default Style to stddev
+- In the Tile Caching tab
+    - Uncheck the “Create a cached layer for this layer” entry
+    - Hit the Save button
+
+That’s it, the layer is ready!
+
+- Go to the Layer Preview section
+- For the “opengeo:normalized” layer, click Go
+
+![preview](img/preview.png)
+
+We can change the column we’re viewing by altering the column view parameter in the WMS request URL.
+
+- Here is the default column:
+[https://workshop-boundless-geocat.geocat.net/geoserver/it.geosolutions/wms/reflect?layers=normalized](https://workshop-boundless-geocat.geocat.net/geoserver/it.geosolutions/wms/reflect?layers=normalized)
+- Here is the AUTO_LAND column:
+[https://workshop-boundless-geocat.geocat.net/geoserver/it.geosolutions/wms/reflect?layers=normalized&viewparams=column:AUTO_LAND](https://workshop-boundless-geocat.geocat.net/geoserver/it.geosolutions/wms/reflect?layers=normalized&viewparams=column:AUTO_LAND)
+- Here is the AF_ZIEK_E column:
+[https://workshop-boundless-geocat.geocat.net/geoserver/it.geosolutions/wms/reflect?layers=normalized&viewparams=column:AF_ZIEK_E](https://workshop-boundless-geocat.geocat.net/geoserver/it.geosolutions/wms/reflect?layers=normalized&viewparams=column:AF_ZIEK_E)
+
+The column names that the census uses are pretty opaque aren’t they? What we need is a web app that lets us see nice human readable column information, and also lets us change the column we’re viewing on the fly.
 
 ## Building the App
 

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<StyledLayerDescriptor version="1.0.0"
+  xmlns="http://www.opengis.net/sld"
+  xmlns:ogc="http://www.opengis.net/ogc"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:gml="http://www.opengis.net/gml"
+  xsi:schemaLocation="http://www.opengis.net/sld
+  http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd">
+
+  <NamedLayer>
+    <Name>opengeo:stddev</Name>
+    <UserStyle>
+
+      <Name>Standard Deviation Ranges</Name>
+
+      <FeatureTypeStyle>
+
+        <Rule>
+          <Name>StdDev &lt; -1.0</Name>
+          <ogc:Filter>
+            <ogc:PropertyIsLessThan>
+              <ogc:PropertyName>normalized_data</ogc:PropertyName>
+              <ogc:Literal>-1.0</ogc:Literal>
+            </ogc:PropertyIsLessThan>
+          </ogc:Filter>
+          <PolygonSymbolizer>
+             <Fill>
+                <!-- CssParameters allowed are fill and fill-opacity -->
+                <CssParameter name="fill">#b2182b</CssParameter>
+             </Fill>
+             <Stroke>
+               <CssParameter name="stroke">#1F1F1F</CssParameter>
+               <CssParameter name="stroke-width">.25</CssParameter>
+             </Stroke>
+          </PolygonSymbolizer>
+        </Rule>
+
+        <Rule>
+          <Name>-1.0 &lt; StdDev &lt; -0.5</Name>
+          <ogc:Filter>
+            <ogc:PropertyIsBetween>
+              <ogc:PropertyName>normalized_data</ogc:PropertyName>
+              <ogc:LowerBoundary>
+                <ogc:Literal>-1.0</ogc:Literal>
+              </ogc:LowerBoundary>
+              <ogc:UpperBoundary>
+                <ogc:Literal>-0.5</ogc:Literal>
+              </ogc:UpperBoundary>
+            </ogc:PropertyIsBetween>
+          </ogc:Filter>
+          <PolygonSymbolizer>
+            <Fill>
+              <!-- CssParameters allowed are fill and fill-opacity -->
+              <CssParameter name="fill">#ef8a62</CssParameter>
+            </Fill>
+            <Stroke>
+               <CssParameter name="stroke">#1F1F1F</CssParameter>
+               <CssParameter name="stroke-width">.25</CssParameter>
+             </Stroke>
+          </PolygonSymbolizer>
+        </Rule>
+
+        <Rule>
+          <Name>-0.5 &lt; StdDev &lt; 0.0</Name>
+          <ogc:Filter>
+            <ogc:PropertyIsBetween>
+              <ogc:PropertyName>normalized_data</ogc:PropertyName>
+              <ogc:LowerBoundary>
+                <ogc:Literal>-0.5</ogc:Literal>
+              </ogc:LowerBoundary>
+              <ogc:UpperBoundary>
+                <ogc:Literal>0.0</ogc:Literal>
+              </ogc:UpperBoundary>
+            </ogc:PropertyIsBetween>
+          </ogc:Filter>
+          <PolygonSymbolizer>
+            <Fill>
+              <!-- CssParameters allowed are fill and fill-opacity -->
+              <CssParameter name="fill">#fddbc7</CssParameter>
+            </Fill>
+            <Stroke>
+               <CssParameter name="stroke">#1F1F1F</CssParameter>
+               <CssParameter name="stroke-width">.25</CssParameter>
+             </Stroke>
+          </PolygonSymbolizer>
+        </Rule>
+
+        <Rule>
+          <Name>0.0 &lt; StdDev &lt; 0.5</Name>
+          <ogc:Filter>
+            <ogc:PropertyIsBetween>
+              <ogc:PropertyName>normalized_data</ogc:PropertyName>
+              <ogc:LowerBoundary>
+                <ogc:Literal>0.0</ogc:Literal>
+              </ogc:LowerBoundary>
+              <ogc:UpperBoundary>
+                <ogc:Literal>0.5</ogc:Literal>
+              </ogc:UpperBoundary>
+            </ogc:PropertyIsBetween>
+          </ogc:Filter>
+          <PolygonSymbolizer>
+            <Fill>
+              <!-- CssParameters allowed are fill and fill-opacity -->
+              <CssParameter name="fill">#d1e5f0</CssParameter>
+            </Fill>
+            <Stroke>
+               <CssParameter name="stroke">#1F1F1F</CssParameter>
+               <CssParameter name="stroke-width">.25</CssParameter>
+             </Stroke>
+          </PolygonSymbolizer>
+        </Rule>
+
+        <Rule>
+          <Name>0.5 &lt; StdDev &lt; 1.0</Name>
+          <ogc:Filter>
+            <ogc:PropertyIsBetween>
+              <ogc:PropertyName>normalized_data</ogc:PropertyName>
+              <ogc:LowerBoundary>
+                <ogc:Literal>0.5</ogc:Literal>
+              </ogc:LowerBoundary>
+              <ogc:UpperBoundary>
+                <ogc:Literal>1.0</ogc:Literal>
+              </ogc:UpperBoundary>
+            </ogc:PropertyIsBetween>
+          </ogc:Filter>
+          <PolygonSymbolizer>
+            <Fill>
+              <!-- CssParameters allowed are fill and fill-opacity -->
+              <CssParameter name="fill">#67a9cf</CssParameter>
+            </Fill>
+            <Stroke>
+               <CssParameter name="stroke">#1F1F1F</CssParameter>
+               <CssParameter name="stroke-width">.25</CssParameter>
+             </Stroke>
+          </PolygonSymbolizer>
+        </Rule>
+
+        <Rule>
+          <Name>1.0 &lt; StdDev</Name>
+          <ogc:Filter>
+            <ogc:PropertyIsGreaterThan>
+              <ogc:PropertyName>normalized_data</ogc:PropertyName>
+              <ogc:Literal>1.0</ogc:Literal>
+            </ogc:PropertyIsGreaterThan>
+          </ogc:Filter>
+          <PolygonSymbolizer>
+             <Fill>
+                <!-- CssParameters allowed are fill and fill-opacity -->
+                <CssParameter name="fill">#2166ac</CssParameter>
+             </Fill>
+            <Stroke>
+               <CssParameter name="stroke">#1F1F1F</CssParameter>
+               <CssParameter name="stroke-width">.25</CssParameter>
+             </Stroke>
+          </PolygonSymbolizer>
+        </Rule>
+
+     </FeatureTypeStyle>
+    </UserStyle>
+  </NamedLayer>
+</StyledLayerDescriptor>
