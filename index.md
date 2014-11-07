@@ -138,7 +138,133 @@ Our new parametric SQL view will look like this:
 
 ## Building the App
 
+### Preparing the Metadata
+
+The first thing we need for our app is a data file that maps the short, meaningless column names in our census table to human readable information. Fortunately, the [dictionary.txt](data/dictionary.txt) file has all the information we need. Here’s a couple example lines:
+
+
+    P_HH_M_K: Huishoudens met kinderen [%]
+    GEM_HH_GR: Gemiddelde huishoudensgrootte [absoluut]
+    P_WEST_AL: Westers totaal [%]
+
+Each line has the column name and a human readable description. Fortunately the information is nicely seperated by a colon in the text file, so the fields can be extracted by using a `split()` function.
+
+We’re going to consume this information in a JavaScript web application. The text file can easily be read in and split into lines. Each line can be split into an array with at position 0 the attribute code and at position 1 the attribute description to populate a topics dropdown.
+
+
+### Framing the Map
+
+We already saw our map visualized in a bare [OpenLayers](http://ol3js.org/) map frame in the Layer Preview section of GeoServer.
+
+We want an application that provides a user interface component that manipulates the source WMS URL, altering the URL [viewparams](http://docs.geoserver.org/stable/en/user/data/database/sqlview.html#using-a-parametric-sql-view) parameter.
+
+We’ll build the app using [Bootstrap](http://getbootstrap.com/) for a straightforward layout with CSS, and [OpenLayers](http://ol3js.org/) as the map component.
+
+The base HTML page, [index.html](code/index.html), contains script and stylesheet includes bringing in our various libraries. A custom stylesheet gives us a fullscreen map with a legend overlay. Bootstrap css classes are used to style the navigation bar. Containers for the map and a header navigation bar with the aforementioned topics dropdown are also included, and an image element with the legend image from a WMS *GetLegendGraphic* request is put inside the map container.
+
+<pre><CODE>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Boundless Census Map&lt;/title&gt;
+    &lt;!-- Bootstrap --&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;resources/bootstrap/css/bootstrap.min.css&quot; type=&quot;text/css&quot;&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;resources/bootstrap/css/bootstrap-theme.min.css&quot; type=&quot;text/css&quot;&gt;
+    &lt;script src=&quot;resources/jquery-1.10.2.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;resources/bootstrap/js/bootstrap.min.js&quot;&gt;&lt;/script&gt;
+    &lt;!-- OpenLayers --&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;resources/ol3/ol.css&quot;&gt;
+    &lt;script src=&quot;resources/ol3/ol.js&quot;&gt;&lt;/script&gt;
+    &lt;!-- Our Application --&gt;
+    &lt;style&gt;
+      html, body, #map {
+        height: 100%;
+      }
+      #map {
+        padding-top: 50px;
+      }
+      .legend {
+        position: absolute;
+        z-index: 1;
+        left: 10px;
+        bottom: 10px;
+        opacity: 0.6;
+      }
+    &lt;/style&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;nav class=&quot;navbar navbar-inverse navbar-fixed-top&quot; role=&quot;navigation&quot;&gt;
+      &lt;div class=&quot;navbar-header&quot;&gt;
+        &lt;a class=&quot;navbar-brand&quot; href=&quot;#&quot;&gt;Boundless Census Map&lt;/a&gt;
+      &lt;/div&gt;
+      &lt;form class=&quot;navbar-form navbar-right&quot;&gt;
+        &lt;div class=&quot;form-group&quot;&gt;
+          &lt;select id=&quot;topics&quot; class=&quot;form-control&quot;&gt;&lt;/select&gt;
+        &lt;/div&gt;
+      &lt;/form&gt;
+    &lt;/nav&gt;
+    &lt;div id=&quot;map&quot;&gt;
+      &lt;!-- GetLegendGraphic, customized with some LEGEND_OPTIONS --&gt;
+      &lt;img class=&quot;legend img-rounded&quot; src=&quot;https://workshop-boundless-geocat.geocat.net/geoserver/it.geosolutions/wms?REQUEST=GetLegendGraphic&VERSION=1.3.0&FORMAT=image/png&WIDTH=26&HEIGHT=18&STRICT=false&LAYER=normalized&LEGEND_OPTIONS=fontName:sans-serif;fontSize:11;fontAntiAliasing:true;fontStyle:normal;fontColor:0xFFFFFF;bgColor:0x000000quot;&gt;
+    &lt;/div&gt;
+    &lt;script type=&quot;text/javascript&quot; src=&quot;censusmap.js&quot;&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</CODE></pre>
+
+The real code is in the [censusmap.js](code/censusmap.js) file. We start by creating an [OpenStreetMap](http://openstreetmap.org/) base layer, and adding our parameterized census layer on top as an image layer with a [WMS Layer source](http://ol3js.org/en/master/apidoc/ol.source.ImageWMS.html).
+
+<pre><code class="js">// Base map
+var osmLayer = new ol.layer.Tile({source: new ol.source.OSM()});
+
+// Census map layer
+var wmsLayer = new ol.layer.Image({
+  source: new ol.source.ImageWMS({
+    url: 'https://workshop-boundless-geocat.geocat.net/geoserver/it.geosolutions/wms?',
+    params: {'LAYERS': 'normalized'}
+  }),
+  opacity: 0.6
+});
+
+// Map object
+olMap = new ol.Map({
+  target: 'map',
+  renderer: ol.RendererHint.CANVAS,
+  layers: [osmLayer, wmsLayer],
+  view: new ol.View2D({
+    center: [548488.744033247, 6776044.612217913],
+    zoom: 7
+  })
+});</code>
+</pre>
+
+We configure an [OpenLayers Map](http://ol3js.org/en/master/apidoc/ol.Map.html), assign the layers, and give it a map view with a center and zoom level. Now the map will load.
+
+The select element with the id topics will be our drop-down list of available columns. We load the [dictionary.txt](data/dictionary.txt) file, and fill the select element with its contents. This is done by adding an option child for each line.
+
+<pre><code class="highlight-javascript">// Load variables into dropdown
+$.get("../data/dictionary.txt", function(response) {
+  // We start at line 3 - line 1 is column names, line 2 is not a variable
+  $(response.split('\n')).each(function(index, line) {
+    $('#topics').append($("&lt;option&gt;")
+      .val(line.split(":")[0].trim())
+      .html(line.split(":")[1].trim()));
+  });
+});</code></pre>
+
+<pre><code class="javascript">// Add behaviour to dropdown
+$('#topics').change(function() {
+  wmsLayer.getSource().updateParams({
+    'viewparams': 'column:' + $('#topics>option:selected').val()
+  });
+});</code></pre>
+
+Look at the the [censusmap.js](code/censusmap.js) file to see the whole application in one page.
+
+When we open the [index.html](code/index.html) file, we see the application in action.
+
+![census-app](img/census-app.png)
+
 ## Conclusion
+
 We’ve built an application for browsing 51 different census variables, using less than 51 lines of JavaScript application code, and demonstrating:
 - SQL views provide a powerful means of manipulating data on the fly.
 - Standard deviations make for attractive visualization breaks.
