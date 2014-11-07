@@ -415,7 +415,7 @@ The column names that the census uses are pretty opaque aren’t they? What we n
 
 ### Preparing the Metadata
 
-The first thing we need for our app is a data file that maps the short, meaningless column names in our census table to human readable information. Fortunately, the [dictionary.txt](data/dictionary.txt) file has all the information we need. The dictionary.txt file was created by parsing the text of the [Buurten en Wijken documentation pdf](http://download.cbs.nl/regionale-kaarten/toelichting-buurtkaart-2013-v1.pdf) with a [python script](data/extract-dictionary.py).  
+The first thing we need for our app is a data file that maps the short, meaningless column names in our census table to human readable information. Fortunately, the [dictionary.txt](data/dictionary.txt) file has all the information we need. The dictionary.txt file was created by parsing the text of the [Buurten en Wijken documentation pdf](http://download.cbs.nl/regionale-kaarten/toelichting-buurtkaart-2013-v1.pdf) with a [python script](data/extract-dictionary.py.txt).  
  Here’s a couple example lines:
 
 
