@@ -52,9 +52,7 @@ For this workshop we will be using the dataset [Wijk- en Buurtkaart 2013](http:/
 
 Loading the `wijk_2013_v1.shp` file is pretty easy, either using the command line or the shape loader GUI. Just remember that our target table name is counties. Here’s the command-line:
 
-<pre>
-  <code class="bash">shp2pgsql -I -s 28992 -W "LATIN1" wijk_2013_v1.shp wijken | psql wijken</code>
-</pre>
+<pre><code class="bash">shp2pgsql -I -s 28992 -W "LATIN1" wijk_2013_v1.shp wijken | psql wijken</code></pre>
 
 And this is what the GUI looks like:
 
@@ -73,10 +71,70 @@ Using a [parametric SQL](http://docs.geoserver.org/stable/en/user/data/database/
 
 For example, this SQL definition will allow us to substitute any column we want into the map rendering chain:
 
-<pre>
-  <code class="sql">SELECT census.fips, counties.geom, %column% AS data
-    FROM census JOIN counties USING (fips);</code>
-</pre>
+<pre><code class="sql">SELECT wk_code, wk_naam, gm_code, gm_naam, water, %column% AS data
+    FROM wijken;</code></pre>
+
+### Preparing the Data
+
+According to the [documentation](http://download.cbs.nl/regionale-kaarten/toelichting-buurtkaart-2013-v1.pdf) the NoData values of the Wijken en Buurten dataset are set to -99999997, -99999998 and -99999999. To make sure that these are correctly displayed , these values need to be set to NULL.
+
+<pre><code class="sql">DO $$
+DECLARE
+   col_names CURSOR FOR  SELECT column_name as cn, data_type as dt
+      from information_schema.columns
+      where table_name='wijken';
+BEGIN
+
+   FOR col_name_row IN col_names LOOP
+      IF  col_name_row.cn not in ('wk_code','wk_naam','gm_code','gm_naam','water', 'geom' ) THEN
+         RAISE NOTICE 'Updating column %', col_name_row.cn;
+         EXECUTE format ('UPDATE wijken SET %I=null WHERE CAST(%I AS int) in (-99999997,-99999998,-99999999)', col_name_row.cn, col_name_row.cn);
+      END IF;
+   END LOOP;
+END$$;</code></pre>
+
+
+### One Style to Rule them All
+
+Viewing our data via a parametric SQL view doesn’t quite get us over the goal line though, because we still need to create a thematic style for the data, and the data in our 51 columns have vastly different ranges and distributions:
+
+- some are percentages
+- some are absolute population counts
+- some are medians or averages of absolutes
+
+We need to somehow get all this different data onto one scale, preferably one that provides for easy visual comparisons between variables.
+
+The answer is to use the average and standard deviation of the data to normalize it to a standard scale
+
+![normal_distribution](http://workshops.boundlessgeo.com/tutorial-censusmap/_images/stddev.png)
+
+For example:
+
+- For data set D, suppose the avg(D) is 10 and the stddev(D) is 5.
+- What will the average and standard deviation of (D - 10) / 5 be?
+- The average will be 0 and the standard deviation will be 1.
+
+Let’s try it on our own census data.
+
+<pre><code class="sql">SELECT Avg(pst045212), Stddev(pst045212) FROM census;
+
+--
+--        avg        |     stddev
+-- ------------------+-----------------
+--  99877.2001272669 | 319578.62862369
+
+SELECT Avg((pst045212 - 99877.2001272669) / 319578.62862369),
+       Stddev((pst045212 - 99877.2001272669) / 319578.62862369)
+FROM census;
+
+--     avg    | stddev
+-- -----------+--------
+--      0     |      1</code></pre>
+
+So we can easily convert any of our data into a scale that centers on 0 and where one standard deviation equals one unit just by normalizing the data with the average and standard deviation!
+
+Our new parametric SQL view will look like this:
+
 
 ## Building the App
 

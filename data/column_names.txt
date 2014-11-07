@@ -1,0 +1,65 @@
+ wk_code    | character varying(8)         |
+ wk_naam    | character varying(60)        |
+ gm_code    | character varying(6)         |
+ gm_naam    | character varying(60)        |
+ water      | character varying(4)         |
+ aant_inw   | numeric(10,0)                |
+ aant_man   | numeric(10,0)                |
+ aant_vrouw | numeric(10,0)                |
+ p_00_14_jr | numeric(10,0)                |
+ p_15_24_jr | numeric(10,0)                |
+ p_25_44_jr | numeric(10,0)                |
+ p_45_64_jr | numeric(10,0)                |
+ p_65_eo_jr | numeric(10,0)                |
+ p_ongehuwd | numeric(10,0)                |
+ p_gehuwd   | numeric(10,0)                |
+ p_gescheid | numeric(10,0)                |
+ p_verweduw | numeric(10,0)                |
+ bev_dichth | numeric(10,0)                |
+ aantal_hh  | numeric(10,0)                |
+ p_eenp_hh  | numeric(10,0)                |
+ p_hh_z_k   | numeric(10,0)                |
+ p_hh_m_k   | numeric(10,0)                |
+ gem_hh_gr  | double precision             |
+ p_west_al  | numeric(10,0)                |
+ p_n_w_al   | numeric(10,0)                |
+ p_marokko  | numeric(10,0)                |
+ p_ant_aru  | numeric(10,0)                |
+ p_surinam  | numeric(10,0)                |
+ p_turkije  | numeric(10,0)                |
+ p_over_nw  | numeric(10,0)                |
+ auto_tot   | numeric(10,0)                |
+ auto_hh    | double precision             |
+ auto_land  | numeric(10,0)                |
+ bedr_auto  | numeric(10,0)                |
+ motor_2w   | numeric(10,0)                |
+ a_bst_b    | numeric(10,0)                |
+ a_bst_nb   | numeric(10,0)                |
+ a_lftj6j   | numeric(10,0)                |
+ a_lfto6j   | numeric(10,0)                |
+ af_ziek_i  | double precision             |
+ av5_ziek_i | double precision             |
+ av10ziek_i | double precision             |
+ av20ziek_i | double precision             |
+ af_ziek_e  | double precision             |
+ av5_ziek_e | double precision             |
+ av10ziek_e | double precision             |
+ av20ziek_e | double precision             |
+ af_kdv     | double precision             |
+ av1_kdv    | double precision             |
+ av3_kdv    | double precision             |
+ av5_kdv    | double precision             |
+ af_bso     | double precision             |
+ av1_bso    | double precision             |
+ av3_bso    | double precision             |
+ av5_bso    | double precision             |
+ af_oprith  | double precision             |
+ af_treinst | double precision             |
+ af_overst  | double precision             |
+ af_biblio  | double precision             |
+ af_ijsbaan | double precision             |
+ af_brandw  | double precision             |
+ opp_tot    | numeric(10,0)                |
+ opp_land   | numeric(10,0)                |
+ opp_water  | numeric(10,0)                |
+ geom       | geometry(MultiPolygon,28992) |

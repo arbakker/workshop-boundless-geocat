@@ -1,0 +1,36 @@
+
+
+
+DO $$
+DECLARE
+   col_names CURSOR FOR  SELECT column_name as cn, data_type as dt
+      from information_schema.columns
+      where table_name='wijken';
+BEGIN
+
+   FOR col_name_row IN col_names LOOP
+      IF  col_name_row.cn not in ('wk_code','wk_naam','gm_code','gm_naam','water', 'geom' ) THEN
+         RAISE NOTICE 'Updating column %', col_name_row.cn;
+         EXECUTE format ('UPDATE wijken SET %I=null WHERE CAST(%I AS int) in (-99999997,-99999998,-99999999)', col_name_row.cn, col_name_row.cn);
+      END IF;
+   END LOOP;
+
+END$$;
+
+
+-- Precompute the Avg and StdDev,
+-- then join the tables and normalize
+WITH stats AS (
+  SELECT Avg(%column%) AS avg,
+         Stddev(%column%) AS stddev
+  FROM wijken
+)
+SELECT
+  wijken.geom,
+  wijken.wk_code,
+  wijken.wk_naam,
+  wijken.gm_naam || 'Gemeente' As name,
+  '%column%'::text As variable,
+  '%column%'::real As data,
+  (%column% - avg)/stddev AS normalized_data
+FROM stats
