@@ -167,7 +167,7 @@ With our data normalized, we are ready to create one style to rule them all!
 
 The colors above weren’t chosen randomly! I always use the [ColorBrewer](http://colorbrewer2.org/) site when building themes, because ColorBrewer provides palettes that have been tested for maximum readability and to some extent aesthetic quality. Here’s the palette I chose:
 
-![colorbrewer](img/colorbrewer.png)
+![colorbrewer](img/color-brewer.png)
 
 - Configure a new style in GeoServer by going to the Styles section, and selecting Add a new style.
 - Set the style name to stddev
