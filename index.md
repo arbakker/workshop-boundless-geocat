@@ -2,7 +2,9 @@
 layout: page
 permalink: /
 ---
+
 > **Note**
+>
 >
 > Check out the [full demonstration application](code/index.html) and play!
 
@@ -39,7 +41,7 @@ For this workshop we will be using the dataset [Wijk- en Buurtkaart 2013](http:/
 
 - Download the [dataset](http://www.cbs.nl/nl-NL/menu/themas/dossiers/nederland-regionaal/links/2013-buurtkaart-shape-versie-1-el.htm).
 - Unzip the file
-- You will only need `wijk_2013_v1.shp`
+- You will only need wijk_2013_v1.shp
 
 
 ## Loading the Data
@@ -53,13 +55,13 @@ For this workshop we will be using the dataset [Wijk- en Buurtkaart 2013](http:/
 
 ### Loading the Shapefile
 
-Loading the `wijk_2013_v1.shp` file is pretty easy, either using the command line or the shape loader GUI. Just remember that our target table name is counties. Here’s the command-line:
+Loading the wijk_2013_v1.shp file is pretty easy, either using the command line or the shape loader GUI. Just remember that our target table name is counties. Here’s the command-line:
 
 <pre><code class="bash">shp2pgsql -I -s 28992 -W "LATIN1" wijk_2013_v1.shp wijken | psql wijken</code></pre>
 
 And this is what the GUI looks like:
 
-![gui_shploader](http://workshops.boundlessgeo.com/tutorial-censusmap/_images/shploader.png)
+![gui_shploader](img/shploader_70.png)
 
 Note that, that the shapefile contains a number of attributes
 
@@ -543,10 +545,14 @@ When we open the [index.html](code/index.html) file, we see the application in a
 
 ## Conclusion
 
-We’ve built an application for browsing 51 different census variables, using less than 51 lines of JavaScript application code, and demonstrating:
+We’ve built an application for browsing 59 different census variables, using less than 51 lines of JavaScript application code, and demonstrating:
 - SQL views provide a powerful means of manipulating data on the fly.
 - Standard deviations make for attractive visualization breaks.
 - Professionally generated color palettes are better than programmer generated ones.
 - Simple OpenLayers applications are easy to build.
 - Census data can be really, really interesting!
 - The application is easy to extend. With 20 more lines of code we can handle clicks and display feature information.
+
+## Can't get enough?
+
+Try to implement one of these [examples](http://openlayers.org/en/v3.0.0/examples/) in your own map.
