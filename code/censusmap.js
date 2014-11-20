@@ -6,36 +6,40 @@ var mapboxLayer =new ol.layer.Tile({
   })
 });
 
-var projection = ol.proj.get('EPSG:28992');
-var projectionExtent = projection.getExtent();
-var size = ol.extent.getWidth(projectionExtent) / 256;
-var resolutions = new Array(21);
-var matrixIds = new Array(21);
-for (var z = 0; z < 21; ++z) {
-  // generate resolutions and matrixIds arrays for this WMTS
-  resolutions[z] = size / Math.pow(2, z);
-  matrixIds[z] = z;
-}
+var extent = [-285401.920000,22598.080000,595401.920000,903401.920000];
+var resolutions = [3440.64,1720.32,860.16,430.08,215.04,107.52,53.76,26.88,13.44,6.72,3.36,1.68,0.84,0.42,0.21];
+
+var projection = new ol.proj.Projection({
+    code: 'EPSG:28992',
+    units: 'meters',
+    extent: extent
+});
+
+var url = 'http://openbasiskaart.nl/mapcache/tms/1.0.0/osm@rd/';
+
+var tileUrlFunction = function(tileCoord, pixelRatio, projection) {
+  var zxy = tileCoord;
+  if (zxy[1] < 0 || zxy[2] < 0) {
+    return "";
+  }
+  return url +
+    zxy[0].toString()+'/'+ zxy[1].toString() +'/'+
+    zxy[2].toString() +'.png';
+};
 
 var openbasiskaartLayer = new ol.layer.Tile({
-      opacity: 0.7,
-      extent: projectionExtent,
-      source: new ol.source.WMTS({
-        attributions: [attribution],
-        url: 'http://www.opengis.net/wmts/1.0 http://schemas.opengis.net/wmts',
-        layer: '0',
-        matrixSet: 'EPSG:28992',
-        format: 'image/png',
-        projection: projection,
-        tileGrid: new ol.tilegrid.WMTS({
-          origin: ol.extent.getTopLeft(projectionExtent),
-          resolutions: resolutions,
-          matrixIds: matrixIds
-        }),
-        style: 'default'
-      })
-    });
-
+  preload: 0,
+  source: new ol.source.TileImage({
+    crossOrigin: null,
+    extent: extent,
+    projection: projection,
+    tileGrid: new ol.tilegrid.TileGrid({
+      origin: [-285401.920000,22598.080000],
+      resolutions: resolutions
+    }),
+    tileUrlFunction: tileUrlFunction
+  })
+});
 
 // Census map layer
 var wmsLayer = new ol.layer.Image({
@@ -64,10 +68,10 @@ olMap = new ol.Map({
   layers: [
   openbasiskaartLayer, wmsLayer
   ],
-  renderer: ol.RendererHint.CANVAS,
-  view: new ol.View2D({
-    center: [548488.744033247, 6776044.612217913],
-    zoom: 7
+  view: new ol.View({
+    projection: projection,
+    center: [150000, 450000],
+    zoom: 2
   })
 });
 
