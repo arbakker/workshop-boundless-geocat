@@ -1,13 +1,7 @@
-// Base map
-//var osmLayer = new ol.layer.Tile({source: new ol.source.OSM()});
-var mapboxLayer =new ol.layer.Tile({
-  source: new ol.source.XYZ({
-    url: 'http://api.tiles.mapbox.com/v4/arbakker.a4255e61/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiYXJiYWtrZXIiLCJhIjoiZnhKY29VNCJ9.2NU3RDNmc16br3JRywdAvA'
-  })
-});
-
+// Base map - openbasiskaart tile layer
 var extent = [-285401.920000,22598.080000,595401.920000,903401.920000];
 var resolutions = [3440.64,1720.32,860.16,430.08,215.04,107.52,53.76,26.88,13.44,6.72,3.36,1.68,0.84,0.42,0.21];
+
 
 var projection = new ol.proj.Projection({
     code: 'EPSG:28992',
@@ -44,25 +38,13 @@ var openbasiskaartLayer = new ol.layer.Tile({
 // Census map layer
 var wmsLayer = new ol.layer.Image({
   source: new ol.source.ImageWMS({
-    url: 'https://workshop-boundless-geocat.geocat.net/geoserver/it.geosolutions/wms?',
+    url: 'https://workshop-boundless-geocat.geocat.net/geoserver/opengeo/wms?',
     params: {'LAYERS': 'normalized'}
   }),
   opacity: 0.6
 });
 
-// Map object
-/*
-olMap = new ol.Map({
-  target: 'map',
-  renderer: ol.RendererHint.CANVAS,
-  layers: [mapboxLayer, wmsLayer],
-  view: new ol.View2D({
-    center: [548488.744033247, 6776044.612217913],
-    zoom: 7
-  })
-});
-*/
-
+// Create OpenLayers map object
 olMap = new ol.Map({
   target: 'map',
   layers: [
@@ -74,8 +56,6 @@ olMap = new ol.Map({
     zoom: 2
   })
 });
-
-
 
 // Load variables into dropdown
 $.get("../data/dictionary.txt", function(response) {

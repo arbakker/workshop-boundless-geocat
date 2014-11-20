@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Boundless Census Map</title>
+    <title>OpenGeo Suite Workshop - Kaart</title>
     <!-- Bootstrap -->
     <link rel="stylesheet" href="resources/bootstrap.min.css" type="text/css">
     <link rel="stylesheet" href="resources/bootstrap-theme.min.css" type="text/css">
@@ -45,7 +45,7 @@
   <body>
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="navbar-header">
-        <a class="navbar-brand" href="#">Boundless and Geocat - Wijken en Buurten Kaart</a>
+        <a class="navbar-brand" href="#">OpenGeo Suite Workshop - Wijken Kaart</a>
       </div>
       <form class="navbar-form navbar-right">
         <div class="form-group">
@@ -56,10 +56,10 @@
     <div id="map">
       <!-- GetLegendGraphic, customized with some LEGEND_OPTIONS -->
 
-      <img class="legend img-rounded" src="https://workshop-boundless-geocat.geocat.net/geoserver/it.geosolutions/wms?REQUEST=GetLegendGraphic&VERSION=1.3.0&FORMAT=image/png&WIDTH=26&HEIGHT=18&STRICT=false&LAYER=normalized&LEGEND_OPTIONS=fontName:DejaVu%20Sans;fontSize:11;fontAntiAliasing:true;fontStyle:normal;fontColor:0xFFFFFF;bgColor:0x000000">
+      <img class="legend img-rounded" src="https://workshop-boundless-geocat.geocat.net/geoserver/opengeo/wms?REQUEST=GetLegendGraphic&VERSION=1.3.0&FORMAT=image/png&WIDTH=26&HEIGHT=18&STRICT=false&LAYER=normalized&LEGEND_OPTIONS=fontName:DejaVu%20Sans;fontSize:11;fontAntiAliasing:true;fontStyle:normal;fontColor:0xFFFFFF;bgColor:0x000000">
       <div id="popup" data-html="true" data-placement="auto" data-title="&times;"></div>
     </div>
-    <script type="text/javascript" src="censusmap.js"></script>
-    
+    <script type="text/javascript" src="wijkenkaart.js"></script>
+
   </body>
 </html>
