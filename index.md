@@ -16,32 +16,32 @@ permalink: /
 
 For this adventure in map building, we use the following tools, which if you are following along you will want to install now:
 
-- OpenGeo Suite 4 (available for Linux, Mac OSX and Windows, follow the [Suite installation instructions](http://suite.opengeo.org/opengeo-docs/installation/index.html))
+- OpenGeo Suite 4.1.1 (available for Linux, Mac OSX and Windows, follow the [Suite installation instructions](http://suite.opengeo.org/opengeo-docs/installation/index.html))
 
 The basic structure of the application will be
 
-- A spatial table of counties in PostGIS, that will join with
+- A spatial table of counties (wijken) in PostGIS, that will join with
 - An attribute table with many census variables of interest, themed by
 - A thematic style in GeoServer, browsed with
-- A simple pane-based application in OpenLayers, allowing the user to choose the census variable of interest.
+- A simple pane-based application in OpenLayers 3, allowing the user to choose the census variable of interest.
 
-This application exercises all the tiers of the OpenGeo Suite!
+This application exercises all the tiers of OpenGeo Suite!
 
 
 ## Getting the Data
 
 In order to keep things simple, we will use a geographic unit that is large enough to be visible on a country-wide map, but small enough to provide a granular view of the data: a district (or wijk in Dutch).
-There are about 3000 districts in the Netherlands, enough to provide a detailed view at the national level, but not so many to slow down our mapping engine.
+There are about 3000 districts in The Netherlands, enough to provide a detailed view at the national level, but not so many to slow down our mapping engine.
 
 
-### The Data
+### The data
 
 For this workshop we will be using the dataset [Wijk- en Buurtkaart 2013](http://www.nationaalgeoregister.nl/geonetwork/srv/dut/search#|71c56abd-87e8-4836-b732-98d73c73c112
-). Which is a dataset that contains all the geometries of all municipalities, districts and neighbourhoods in the Netherlands, and its attribute is a number of statiscal key figures.
+). Which is a dataset that contains all the geometries of all municipalities, districts and neighbourhoods in The Netherlands, and its attributes are a number of statistical key figures.
 
 - Download the [dataset](http://www.cbs.nl/nl-NL/menu/themas/dossiers/nederland-regionaal/links/2013-buurtkaart-shape-versie-1-el.htm).
 - Unzip the file
-- You will only need wijk_2013_v1.shp
+- You will only need the wijk_2013_v1 Shapefile
 
 
 ## Loading the Data
@@ -51,19 +51,19 @@ For this workshop we will be using the dataset [Wijk- en Buurtkaart 2013](http:/
 > The next steps will involve some database work.
 >
 >- If you haven’t already installed the OpenGeo Suite, follow the [Suite installation instructions](http://suite.opengeo.org/opengeo-docs/installation/index.html).
->- [Create a spatial database](http://suite.opengeo.org/opengeo-docs/dataadmin/pgGettingStarted/createdb.html) named wijken to load data into.
+>- Open up pgAdmin3 and [create a spatial database](http://suite.opengeo.org/opengeo-docs/dataadmin/pgGettingStarted/createdb.html) named wijken to load data into.
 
 ### Loading the Shapefile
 
-Loading the wijk_2013_v1.shp file is pretty easy, either using the command line or the shape loader GUI. Just remember that our target table name is counties. Here’s the command-line:
+Loading the wijk_2013_v1.shp file is pretty easy, either using the command line or the shape loader GUI. Just remember that our target table name is wijken. Here’s the command-line:
 
 <pre><code class="bash">shp2pgsql -I -s 28992 -W "LATIN1" wijk_2013_v1.shp wijken | psql wijken</code></pre>
 
-And this is what the GUI looks like:
+And this is what the GUI looks like (use the Options button to set the DBF character encoding to LATIN1):
 
 ![gui_shploader](img/shploader_70.png)
 
-Note that, that the shapefile contains a number of attributes
+Note that, that the shapefile contains a number of attributes such as wk_naam.
 
 ## Drawing the Map
 Our challenge now is to set up a rendering system that can easily render any of our 59 columns of census data as a map.
@@ -81,7 +81,7 @@ For example, this SQL definition will allow us to substitute any column we want 
 
 ### Preparing the Data
 
-According to the [documentation](http://download.cbs.nl/regionale-kaarten/toelichting-buurtkaart-2013-v1.pdf) the NoData values of the Wijken en Buurten dataset are set to -99999997, -99999998 and -99999999. To make sure that these are correctly displayed , these values need to be set to NULL.
+According to the [documentation (see section 3 table 1)](http://download.cbs.nl/regionale-kaarten/toelichting-buurtkaart-2013-v1.pdf) the NoData values of the Wijken en Buurten dataset are set to -99999997, -99999998 and -99999999. To make sure that these are correctly displayed , these values need to be set to NULL.
 
 <pre><code class="sql">DO $$
 DECLARE
@@ -101,7 +101,7 @@ END$$;</code></pre>
 
 ### One Style to Rule them All
 
-Viewing our data via a parametric SQL view doesn’t quite get us over the goal line though, because we still need to create a thematic style for the data, and the data in our 51 columns have vastly different ranges and distributions:
+Viewing our data via a parametric SQL view doesn’t quite get us over the goal line though, because we still need to create a thematic style for the data, and the data in our 59 columns have vastly different ranges and distributions:
 
 - some are percentages
 - some are absolute population counts
@@ -143,7 +143,7 @@ Our new parametric SQL view will look like this:
 WITH stats AS (
   SELECT Avg(%column%) AS avg,
          Stddev(%column%) AS stddev
-  FROM census
+  FROM wijken
 )
 SELECT
   wijken.gm_naam,
@@ -349,7 +349,7 @@ First, we need a PostGIS store that connects to our database
 - Select a PostGIS store
 - Set the workspace to opengeo
 - Set the datasource name to census
-- Set the database to census
+- Set the database to wijken
 - Set the user to postgres
 - Set the password to postgres
 - Save the store
@@ -434,11 +434,11 @@ We’re going to consume this information in a JavaScript web application. The t
 
 ### Framing the Map
 
-We already saw our map visualized in a bare [OpenLayers](http://ol3js.org/) map frame in the Layer Preview section of GeoServer.
+We already saw our map visualized in a bare [OpenLayers 2](http://www.openlayers.org/two) map frame in the Layer Preview section of GeoServer.
 
 We want an application that provides a user interface component that manipulates the source WMS URL, altering the URL [viewparams](http://docs.geoserver.org/stable/en/user/data/database/sqlview.html#using-a-parametric-sql-view) parameter.
 
-We’ll build the app using [Bootstrap](http://getbootstrap.com/) for a straightforward layout with CSS, and [OpenLayers](http://ol3js.org/) as the map component.
+We’ll build the app using [Bootstrap](http://getbootstrap.com/) for a straightforward layout with CSS, and [OpenLayers 3](http://www.openlayers.org/) as the map component.
 
 The base HTML page, [index.html](code/index.html), contains script and stylesheet includes bringing in our various libraries. A custom stylesheet gives us a fullscreen map with a legend overlay. Bootstrap css classes are used to style the navigation bar. Containers for the map and a header navigation bar with the aforementioned topics dropdown are also included, and an image element with the legend image from a WMS *GetLegendGraphic* request is put inside the map container.
 
@@ -490,10 +490,43 @@ The base HTML page, [index.html](code/index.html), contains script and styleshee
   &lt;/body&gt;
 &lt;/html&gt;</CODE></pre>
 
-The real code is in the [censusmap.js](code/censusmap.js) file. We start by creating an [OpenStreetMap](http://openstreetmap.org/) base layer, and adding our parameterized census layer on top as an image layer with a [WMS Layer source](http://ol3js.org/en/master/apidoc/ol.source.ImageWMS.html).
+The real code is in the [censusmap.js](code/censusmap.js) file. We start by creating an [Openbasiskaart](http://openbasiskaart.nl) base layer, and adding our parameterized census layer on top as an image layer with a [WMS Layer source](http://openlayers.org/en/master/apidoc/ol.source.ImageWMS.html).
 
 <pre><code class="js">// Base map
-var osmLayer = new ol.layer.Tile({source: new ol.source.OSM()});
+var extent = [-285401.920000,22598.080000,595401.920000,903401.920000];
+var resolutions = [3440.64,1720.32,860.16,430.08,215.04,107.52,53.76,26.88,13.44,6.72,3.36,1.68,0.84,0.42,0.21];
+
+var projection = new ol.proj.Projection({
+    code: 'EPSG:28992',
+    units: 'meters',
+    extent: extent
+});
+
+var url = 'http://openbasiskaart.nl/mapcache/tms/1.0.0/osm@rd/';
+
+var tileUrlFunction = function(tileCoord, pixelRatio, projection) {
+  var zxy = tileCoord;
+  if (zxy[1] < 0 || zxy[2] < 0) {
+    return "";
+  }
+  return url +
+    zxy[0].toString()+'/'+ zxy[1].toString() +'/'+
+    zxy[2].toString() +'.png';
+};
+
+var openbasiskaartLayer = new ol.layer.Tile({
+  preload: 0,
+  source: new ol.source.TileImage({
+    crossOrigin: null,
+    extent: extent,
+    projection: projection,
+    tileGrid: new ol.tilegrid.TileGrid({
+      origin: [-285401.920000,22598.080000],
+      resolutions: resolutions
+    }),
+    tileUrlFunction: tileUrlFunction
+  })
+});
 
 // Census map layer
 var wmsLayer = new ol.layer.Image({
@@ -507,16 +540,18 @@ var wmsLayer = new ol.layer.Image({
 // Map object
 olMap = new ol.Map({
   target: 'map',
-  renderer: ol.RendererHint.CANVAS,
-  layers: [osmLayer, wmsLayer],
-  view: new ol.View2D({
-    center: [548488.744033247, 6776044.612217913],
-    zoom: 7
+  layers: [
+  openbasiskaartLayer, wmsLayer
+  ],
+  view: new ol.View({
+    projection: projection,
+    center: [150000, 450000],
+    zoom: 2
   })
 });</code>
 </pre>
 
-We configure an [OpenLayers Map](http://ol3js.org/en/master/apidoc/ol.Map.html), assign the layers, and give it a map view with a center and zoom level. Now the map will load.
+We configure an [OpenLayers Map](http://openlayers.org/en/master/apidoc/ol.Map.html), assign the layers, and give it a map view with a center and zoom level. Now the map will load.
 
 The select element with the id topics will be our drop-down list of available columns. We load the [dictionary.txt](data/dictionary.txt) file, and fill the select element with its contents. This is done by adding an option child for each line.
 
@@ -545,7 +580,7 @@ When we open the [index.html](code/index.html) file, we see the application in a
 
 ## Conclusion
 
-We’ve built an application for browsing 59 different census variables, using less than 51 lines of JavaScript application code, and demonstrating:
+We’ve built an application for browsing 59 different census variables, using less than 100 lines of JavaScript application code, and demonstrating:
 - SQL views provide a powerful means of manipulating data on the fly.
 - Standard deviations make for attractive visualization breaks.
 - Professionally generated color palettes are better than programmer generated ones.
