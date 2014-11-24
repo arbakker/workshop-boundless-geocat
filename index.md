@@ -12,7 +12,7 @@ permalink: /
 ## Introduction
 
 
-![app](/Users/anton/Workspace/workshop-boundless-geocat/img/kaart-applicatie.png)
+![app](img/kaart-applicatie.png)
 
 For this adventure in map building, we use the following tools, which if you are following along you will want to install now:
 
