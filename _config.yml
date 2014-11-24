@@ -2,12 +2,12 @@
 title: GeoBuzz - OpenGeo Suite Workshop
 email: anton.bakker@geocat.net
 email2: bartvde@boundless.com
-logo1: http://boundlessgeo.com/wp-content/uploads/2013/09/Boundless_color.png
-logo2: https://www.geocat.net/wp-content/uploads/2014/11/GeoCat_500x1061.png
+logo1: img/boundless.png
+logo2: img/geocat.png
 url1: http://boundlessgeo.com
 url2: https://www.geocat.net
 
-license: "<a rel='license' href='http://creativecommons.org/licenses/by-nc-sa/3.0/'><img alt='Creative Commons License' style='border-width:0' src='http://i.creativecommons.org/l/by-nc-sa/3.0/88x31.png'></a>"
+license: "<a rel='license' href='http://creativecommons.org/licenses/by-nc-sa/3.0/'><img alt='Creative Commons License' style='border-width:0' src='img/cc.png'></a>"
 attribution: "Workshop material based on <a href='http://workshops.boundlessgeo.com/tutorial-censusmap/'>Building a Census Map</a>"
 description: "A small adventure in map building with the OpenGeo Suite featuring GeoServer, PostGIS, OpenLayers 3 and het Nationaal Georegister"
 baseurl: "/workshop-boundless-geocat"
