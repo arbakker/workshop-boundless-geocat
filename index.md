@@ -12,7 +12,7 @@ permalink: /
 ## Introduction
 
 
-![app](img/kaart-applicatie.png)
+![app](/Users/anton/Workspace/workshop-boundless-geocat/img/kaart-applicatie.png)
 
 For this adventure in map building, we use the following tools, which if you are following along you will want to install now:
 
@@ -60,7 +60,7 @@ Loading the wijk_2013_v1.shp file is pretty easy, either using the command line 
 
 And this is what the GUI looks like (use the Options button to set the DBF character encoding to LATIN1):
 
-![gui_shploader](img/shploader_70.png)
+![gui_shploader](img/shploader.png)
 
 Note that, that the shapefile contains a number of attributes such as wk_naam.
 
@@ -110,7 +110,7 @@ We need to somehow get all this different data onto one scale, preferably one th
 
 The answer is to use the average and standard deviation of the data to normalize it to a standard scale.
 
-![normal_distribution](http://workshops.boundlessgeo.com/tutorial-censusmap/_images/stddev.png)
+![normal_distribution](img/stddev.png)
 
 For example:
 
